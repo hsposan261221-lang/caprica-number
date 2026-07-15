@@ -12,9 +12,10 @@ def value_to_char(v):
 def str_to_int(num, base):
     value = 0
     for ch in num:
-        if char_to_value(ch) >= base:
-            raise ValueError(f"{ch}는 {base}진법에서 사용할 수 없습니다.")
-        value = value * base + char_to_value(ch)
+        val = char_to_value(ch)
+        if val >= base:
+            raise ValueError(f"문자 '{ch}'는 {base}진법에서 사용할 수 없어.")
+        value = value * base + val
     return value
 
 def int_to_str(num, base, length=4):
@@ -28,16 +29,17 @@ def int_to_str(num, base, length=4):
 
     return s.rjust(length, "0")
 
-
 def run_kaprekar(base, number):
-
+    # 입력받은 숫자를 무조건 대문자 및 4자리로 맞춤 (예: "24" -> "0024")
     number = number.upper().zfill(4)
+    
+    # 해당 진법에서 쓸 수 없는 숫자가 있는지 미리 검사
+    str_to_int(number, base)
 
     history = []
     steps = []
 
     while True:
-
         high = "".join(sorted(number, reverse=True))
         low = "".join(sorted(number))
 
@@ -45,7 +47,6 @@ def run_kaprekar(base, number):
         small = str_to_int(low, base)
 
         diff = big - small
-
         nxt = int_to_str(diff, base, 4)
 
         steps.append({
@@ -54,6 +55,7 @@ def run_kaprekar(base, number):
             "result": nxt
         })
 
+        # 귀착수(상수) 발견
         if nxt == number:
             return {
                 "status": "constant",
@@ -62,6 +64,7 @@ def run_kaprekar(base, number):
                 "count": len(steps)
             }
 
+        # 루프 발견
         if nxt in history:
             start = history.index(nxt)
             loop = history[start:] + [nxt]
